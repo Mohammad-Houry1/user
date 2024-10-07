@@ -6,6 +6,7 @@
           <th scope="col" class="px-6 py-3">Picture</th>
           <th scope="col" class="px-6 py-3">First Name</th>
           <th scope="col" class="px-6 py-3">Last Name</th>
+          <th scope="col" class="px-6 py-3">Age</th>
           <th scope="col" class="px-6 py-3">Country</th>
           <th scope="col" class="px-6 py-3">City</th>
           <th scope="col" class="px-6 py-3">Email</th>
@@ -43,6 +44,17 @@
               />
             </div>
             <div v-else>{{ user.last }}</div>
+          </td>
+          <td class="px-6 py-4">
+            <div v-if="user.isEditing">
+              <input
+                v-model="user.age"
+                :placeholder="user.age"
+                type="text"
+                class="border rounded p-1"
+              />
+            </div>
+            <div v-else>{{ user.age }}</div>
           </td>
           <td class="px-6 py-4">
             <div v-if="user.isEditing">
@@ -155,7 +167,8 @@ export default {
           last: user.last,
           country: user.country,
           city: user.city,
-          email: user.email
+          email: user.email,
+          age: user.age
         })
         console.log('User updated:', response.data)
       } catch (error) {

@@ -17,6 +17,7 @@
     "express": "^4.21.0",
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.0",
+    "node-cron": "^3.0.3",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },

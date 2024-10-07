@@ -2,6 +2,8 @@ import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import axios from 'axios'
+import cron from 'node-cron'
+
 const app = express()
 const port = 5500
 app.use(cors())
@@ -15,7 +17,8 @@ const userSchema = new mongoose.Schema({
   country: String,
   city: String,
   email: String,
-  picture: String
+  picture: String,
+  age: Number
 })
 
 const User = mongoose.model('User', userSchema)
@@ -25,19 +28,20 @@ mongoose
   .then(() => {
     console.log('Connected to MongoDB Atlas successfully')
 
-    //func to add user
     app.post('/api/adduser', async (req, res) => {
       try {
         const response = await axios.get('https://randomuser.me/api/')
         const data = response.data
 
+        console.log(data)
         const newUser = new User({
           first: data.results[0].name.first,
           last: data.results[0].name.last,
           country: data.results[0].location.country,
           city: data.results[0].location.city,
           email: data.results[0].email,
-          picture: data.results[0].picture.medium
+          picture: data.results[0].picture.medium,
+          age: data.results[0].dob.age
         })
         await newUser.save()
         res.status(200).json({ message: 'New user added successfully' })
@@ -51,6 +55,45 @@ mongoose
   .catch((err) => {
     console.error('Error connecting to MongoDB Atlas:', err)
   })
+
+// cron.schedule('0/10 * * * * *', async () => {
+cron.schedule('0 0 0/3 * * *', async () => {
+  User.find({})
+    .then((users) => {
+      users.forEach(async (element) => {
+        const id = element._id.toString()
+        if (element.age > 40) {
+          await User.deleteOne({ _id: id })
+          console.log('user deletd with the name ' + element.first + '')
+        }
+      })
+    })
+    .catch((err) => {
+      console.error('Error fetching users during cron job:', err)
+    })
+})
+// cron.schedule('0/10 * * * * *', async () => {
+cron.schedule('0 0 0/3 * * *', async () => {
+  try {
+    const response = await axios.get('https://randomuser.me/api/')
+    const data = response.data
+
+    console.log(data)
+    const newUser = new User({
+      first: data.results[0].name.first,
+      last: data.results[0].name.last,
+      country: data.results[0].location.country,
+      city: data.results[0].location.city,
+      email: data.results[0].email,
+      picture: data.results[0].picture.medium,
+      age: data.results[0].dob.age
+    })
+    await newUser.save()
+    console.log('New user added')
+  } catch (error) {
+    console.error('Error fetching and adding new user:', error)
+  }
+})
 
 // to fetch all info from db
 app.get('/api/users', (req, res) => {
@@ -78,6 +121,7 @@ app.put('/api/users/:id', async (req, res) => {
 })
 
 // to delete user from db
+
 app.delete('/api/users/:id', async (req, res) => {
   try {
     const userId = req.params.id
